@@ -25,4 +25,5 @@ const LoginButton = ({ children, mode, asChild }: ILoginButtonProps) => {
     </span>
   );
 };
+
 export default LoginButton;
