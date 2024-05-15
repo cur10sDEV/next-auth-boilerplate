@@ -1,6 +1,44 @@
+"use client";
+
+import { loginUser } from "@/actions/authAction";
+import { loginSchema } from "@/schemas/authSchema";
+import { typeLoginSchema } from "@/types/authTypes";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
 import CardWrapper from "../shared/CardWrapper";
+import FormError from "../shared/FormError";
+import FormSuccess from "../shared/FormSuccess";
+import { Button } from "../ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { Input } from "../ui/input";
+
+const initialState: typeLoginSchema = {
+  email: "",
+  password: "",
+};
 
 const LoginForm = () => {
+  const [isPending, startTransition] = useTransition();
+
+  const loginForm = useForm<typeLoginSchema>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: initialState,
+  });
+
+  const onSubmit = async (values: typeLoginSchema) => {
+    startTransition(() => {
+      loginUser(values);
+    });
+  };
+
   return (
     <CardWrapper
       headerLabel="Welcome Back!"
@@ -8,7 +46,53 @@ const LoginForm = () => {
       buttonHref="/auth/register"
       showSocial
     >
-      Login Form
+      <Form {...loginForm}>
+        <form onSubmit={loginForm.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
+            <FormField
+              control={loginForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      placeholder="johndoe@example.com"
+                      type="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={loginForm.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      placeholder="12345678"
+                      type="password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormError />
+          <FormSuccess />
+          <Button disabled={isPending} className="w-full">
+            {isPending ? "..." : "Login"}
+          </Button>
+        </form>
+      </Form>
     </CardWrapper>
   );
 };
