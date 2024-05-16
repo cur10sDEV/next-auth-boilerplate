@@ -1,9 +1,6 @@
 import { z } from "zod";
 
 interface IValidator {
-  message: string;
-  error: boolean;
-  success: boolean;
   data: any;
 }
 
@@ -14,18 +11,8 @@ export const validator = (
   const validatedFields = schema.safeParse(values);
 
   if (!validatedFields.success) {
-    return {
-      error: true,
-      success: false,
-      message: "Invalid fields!",
-      data: null,
-    };
+    throw new Error("Invalid fields", { cause: "Schema validation Error" });
   }
 
-  return {
-    error: false,
-    success: true,
-    message: "All fields are valid",
-    data: validatedFields.data,
-  };
+  return { data: validatedFields.data };
 };

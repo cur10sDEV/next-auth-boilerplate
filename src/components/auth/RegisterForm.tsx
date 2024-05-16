@@ -41,10 +41,19 @@ const RegisterForm = () => {
   const onSubmit = async (values: typeRegisterSchema) => {
     startTransition(() => {
       registerUser(values).then((data) => {
-        if (data.error) {
-          return setError({ error: data.error, message: data.message });
+        if (!data?.success) {
+          setSuccess({ success: false, message: "" });
+          setError({
+            error: true,
+            message: data?.message || "Login failed!",
+          });
+        } else {
+          setSuccess({
+            success: true,
+            message: data?.message || "Login Successfull!",
+          });
+          setError({ error: false, message: "" });
         }
-        return setSuccess({ success: data.success, message: data.message });
       });
     });
   };

@@ -45,6 +45,9 @@ export const registerSchema = z
       })
       .regex(/[0-9]/, {
         message: "Password must contain at least one number",
+      })
+      .regex(/[#?!@$%^&*-]/, {
+        message: "Password must contain at least on special character",
       }),
     confirmPassword: z.string(),
   })
