@@ -1,10 +1,10 @@
 "use client";
 
-import { loginUser } from "@/actions/authAction";
 import { loginSchema } from "@/schemas/authSchema";
+import { loginUser } from "@/server/actions/authAction";
 import { typeLoginSchema } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import CardWrapper from "../shared/CardWrapper";
 import FormError from "../shared/FormError";
@@ -28,6 +28,9 @@ const initialState: typeLoginSchema = {
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
 
+  const [error, setError] = useState({ error: false, message: "" });
+  const [success, setSuccess] = useState({ success: false, message: "" });
+
   const loginForm = useForm<typeLoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: initialState,
@@ -35,7 +38,12 @@ const LoginForm = () => {
 
   const onSubmit = async (values: typeLoginSchema) => {
     startTransition(() => {
-      loginUser(values);
+      loginUser(values).then((data) => {
+        if (data.error) {
+          return setError({ error: data.error, message: data.message });
+        }
+        return setSuccess({ success: data.success, message: data.message });
+      });
     });
   };
 
@@ -76,7 +84,7 @@ const LoginForm = () => {
                   <FormControl>
                     <Input
                       disabled={isPending}
-                      placeholder="12345678"
+                      placeholder="********"
                       type="password"
                       {...field}
                     />
@@ -86,8 +94,8 @@ const LoginForm = () => {
               )}
             />
           </div>
-          <FormError />
-          <FormSuccess />
+          {error.error && <FormError message={error.message} />}
+          {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
             {isPending ? "..." : "Login"}
           </Button>
