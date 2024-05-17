@@ -16,15 +16,17 @@ export default {
 
           const existingUser = await UserService.getUserByEmail(email);
 
-          if (existingUser && existingUser.password) {
-            const passwordMatch = await verifyPassword(
-              password,
-              existingUser.password
-            );
+          if (!existingUser || !existingUser.password) {
+            return null;
+          }
 
-            if (passwordMatch) {
-              return existingUser;
-            }
+          const passwordMatch = await verifyPassword(
+            password,
+            existingUser.password
+          );
+
+          if (passwordMatch) {
+            return existingUser;
           }
         }
 
