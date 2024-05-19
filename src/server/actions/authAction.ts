@@ -35,6 +35,8 @@ export const loginUser = async (
       switch (error.type) {
         case "CredentialsSignin":
           return { success: false, message: "Invalid Credentials!" };
+        default:
+          return { success: false, message: "Something went wrong!" };
       }
     }
 
