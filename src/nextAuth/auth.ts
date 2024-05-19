@@ -6,6 +6,15 @@ import { db } from "../../prisma/db";
 import authConfig from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
+  events: {
+    async linkAccount({ user }) {
+      await UserService.makeUserEmailVerified(user.id as string);
+    },
+  },
   callbacks: {
     async session({ token, session }) {
       if (session.user && token.sub) {

@@ -1,9 +1,11 @@
 "use client";
 
+import { authErrors } from "@/constants/errors";
 import { loginSchema } from "@/schemas/authSchema";
 import { loginUser } from "@/server/actions/authAction";
 import { typeLoginSchema } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import CardWrapper from "../shared/CardWrapper";
@@ -27,9 +29,12 @@ const initialState: typeLoginSchema = {
 
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
-
   const [error, setError] = useState({ error: false, message: "" });
   const [success, setSuccess] = useState({ success: false, message: "" });
+
+  const searchParams = useSearchParams();
+  const urlErrorCode = searchParams.get("error");
+  const urlError = (urlErrorCode && authErrors[urlErrorCode]) || "";
 
   const loginForm = useForm<typeLoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -103,7 +108,9 @@ const LoginForm = () => {
               )}
             />
           </div>
-          {error.error && <FormError message={error.message} />}
+          {(error.error || urlError) && (
+            <FormError message={error.message || urlError} />
+          )}
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
             {isPending ? "..." : "Login"}
