@@ -49,6 +49,22 @@ class UserService {
       return null;
     }
   }
+
+  static async makeUserEmailVerified(id: string) {
+    try {
+      await db.user.update({
+        where: {
+          id,
+        },
+        data: {
+          emailVerified: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error("Database error");
+      return null;
+    }
+  }
 }
 
 export default UserService;

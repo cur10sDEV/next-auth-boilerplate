@@ -24,14 +24,19 @@ export const loginUser = async (
         password,
         redirectTo: DEFAULT_LOGIN_REDIRECT,
       });
+
+      return { success: true, message: "Success!" };
     }
 
-    return { success: true, message: "Success!" };
+    return { success: false, message: "Login failed!" };
   } catch (error) {
+    console.error(error);
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
           return { success: false, message: "Invalid Credentials!" };
+        default:
+          return { success: false, message: "Something went wrong!" };
       }
     }
 
