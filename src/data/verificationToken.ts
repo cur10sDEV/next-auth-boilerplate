@@ -1,6 +1,6 @@
 import { db } from "../../prisma/db";
 
-class VerificationToken {
+class VerificationTokenService {
   static async getVerificationTokenByEmail(email: string) {
     try {
       const verificationToken = await db.verificationToken.findFirst({
@@ -9,6 +9,7 @@ class VerificationToken {
 
       return verificationToken;
     } catch (error) {
+      console.error("Database error - Verification Token Service");
       return null;
     }
   }
@@ -21,6 +22,7 @@ class VerificationToken {
 
       return verificationToken;
     } catch (error) {
+      console.error("Database error - Verification Token Service");
       return null;
     }
   }
@@ -33,6 +35,7 @@ class VerificationToken {
 
       return true;
     } catch (error) {
+      console.error("Database error - Verification Token Service");
       return null;
     }
   }
@@ -49,9 +52,10 @@ class VerificationToken {
 
       return newToken;
     } catch (error) {
+      console.error("Database error - Verification Token Service");
       return null;
     }
   }
 }
 
-export default VerificationToken;
+export default VerificationTokenService;

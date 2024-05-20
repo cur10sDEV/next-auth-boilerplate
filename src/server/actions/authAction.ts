@@ -1,6 +1,7 @@
 "use server";
 
 import UserService from "@/data/user";
+import VerificationTokenService from "@/data/verificationToken";
 import { hashPassword } from "@/lib/password";
 import { sendVerificationEmail } from "@/lib/resend/mail";
 import { generateVerificationToken } from "@/lib/token";
@@ -104,6 +105,45 @@ export const registerUser = async (
     return {
       success: false,
       message: error.message || "User registration failed!",
+    };
+  }
+};
+
+export const verifyUserEmail = async (
+  token: string
+): Promise<actionResponse> => {
+  try {
+    const existingToken =
+      await VerificationTokenService.getVerificationTokenByToken(token);
+
+    if (!existingToken) {
+      throw new Error("Invalid Verification Link!");
+    }
+
+    const hasExpired = new Date(existingToken.expires) < new Date();
+
+    if (hasExpired) {
+      throw new Error("Verification link has expired!");
+    }
+
+    const existingUser = await UserService.getUserByEmail(existingToken.email);
+
+    if (!existingUser) {
+      throw new Error("Email does not exist!");
+    }
+
+    await UserService.makeUserEmailVerifiedByEmail(existingToken.email);
+
+    await VerificationTokenService.deleteVerificationTokenById(
+      existingToken.id
+    );
+
+    return { success: true, message: "Email verified!" };
+  } catch (error: any) {
+    console.error(error);
+    return {
+      success: false,
+      message: error.message || "Email Verification Failed!",
     };
   }
 };

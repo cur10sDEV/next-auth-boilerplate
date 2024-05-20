@@ -12,7 +12,7 @@ class UserService {
 
       return existingUser;
     } catch (error) {
-      console.error("Database error");
+      console.error("Database error - User Service");
       return null;
     }
   }
@@ -30,7 +30,7 @@ class UserService {
 
       return newUser;
     } catch (error) {
-      console.error("Database error");
+      console.error("Database error - User Service");
       return null;
     }
   }
@@ -45,12 +45,12 @@ class UserService {
 
       return user;
     } catch (error) {
-      console.error("Database error");
+      console.error("Database error - User Service");
       return null;
     }
   }
 
-  static async makeUserEmailVerified(id: string) {
+  static async makeUserEmailVerifiedById(id: string) {
     try {
       await db.user.update({
         where: {
@@ -61,7 +61,24 @@ class UserService {
         },
       });
     } catch (error) {
-      console.error("Database error");
+      console.error("Database error - User Service");
+      return null;
+    }
+  }
+
+  static async makeUserEmailVerifiedByEmail(email: string) {
+    try {
+      await db.user.update({
+        where: {
+          email,
+        },
+        data: {
+          emailVerified: new Date(),
+          email: email,
+        },
+      });
+    } catch (error) {
+      console.error("Database error - User Service");
       return null;
     }
   }

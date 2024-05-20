@@ -12,7 +12,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async linkAccount({ user }) {
-      await UserService.makeUserEmailVerified(user.id as string);
+      await UserService.makeUserEmailVerifiedById(user.id as string);
     },
   },
   callbacks: {
