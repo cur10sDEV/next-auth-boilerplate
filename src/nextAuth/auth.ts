@@ -12,10 +12,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async linkAccount({ user }) {
-      await UserService.makeUserEmailVerified(user.id as string);
+      await UserService.makeUserEmailVerifiedById(user.id as string);
     },
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "credentials") return true;
+
+      const existingUser = await UserService.getUserById(user.id as string);
+
+      if (!existingUser?.emailVerified) return false;
+
+      // TODO: ADD 2FA CHECK
+
+      return true;
+    },
     async session({ token, session }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;

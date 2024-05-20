@@ -1,7 +1,10 @@
 "use server";
 
 import UserService from "@/data/user";
+import VerificationTokenService from "@/data/verificationToken";
 import { hashPassword } from "@/lib/password";
+import { sendVerificationEmail } from "@/lib/resend/mail";
+import { generateVerificationToken } from "@/lib/token";
 import { validator } from "@/lib/zod/validation";
 import { signIn } from "@/nextAuth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
@@ -18,6 +21,24 @@ export const loginUser = async (
 
     if (validatedData) {
       const { email, password } = validatedData.data;
+
+      const existingUser = await UserService.getUserByEmail(email);
+
+      if (!existingUser || !existingUser.email || !existingUser.password) {
+        return { success: false, message: "Invalid Credentials!" };
+      }
+
+      if (!existingUser.emailVerified) {
+        const verificationToken = await generateVerificationToken(
+          existingUser.email
+        );
+
+        if (verificationToken) {
+          await sendVerificationEmail(email, verificationToken.token);
+
+          return { success: true, message: "Confirmation email sent!" };
+        }
+      }
 
       await signIn("credentials", {
         email,
@@ -70,14 +91,59 @@ export const registerUser = async (
       throw new Error("Unable to register user");
     }
 
-    // TODO: Send verification email
+    const verificationToken = await generateVerificationToken(email);
 
-    return { success: true, message: "Registration Successfull!" };
+    if (verificationToken) {
+      await sendVerificationEmail(email, verificationToken.token);
+
+      return { success: true, message: "Confirmation email sent!" };
+    }
+
+    return { success: false, message: "User registration failed!" };
   } catch (error: any) {
     console.error(error.message);
     return {
       success: false,
       message: error.message || "User registration failed!",
+    };
+  }
+};
+
+export const verifyUserEmail = async (
+  token: string
+): Promise<actionResponse> => {
+  try {
+    const existingToken =
+      await VerificationTokenService.getVerificationTokenByToken(token);
+
+    if (!existingToken) {
+      throw new Error("Invalid Verification Link!");
+    }
+
+    const hasExpired = new Date(existingToken.expires) < new Date();
+
+    if (hasExpired) {
+      throw new Error("Verification link has expired!");
+    }
+
+    const existingUser = await UserService.getUserByEmail(existingToken.email);
+
+    if (!existingUser) {
+      throw new Error("Email does not exist!");
+    }
+
+    await UserService.makeUserEmailVerifiedByEmail(existingToken.email);
+
+    await VerificationTokenService.deleteVerificationTokenById(
+      existingToken.id
+    );
+
+    return { success: true, message: "Email verified!" };
+  } catch (error: any) {
+    console.error(error);
+    return {
+      success: false,
+      message: error.message || "Email Verification Failed!",
     };
   }
 };
