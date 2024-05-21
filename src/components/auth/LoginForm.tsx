@@ -5,9 +5,11 @@ import { loginSchema } from "@/schemas/authSchema";
 import { loginUser } from "@/server/actions/authAction";
 import { typeLoginSchema } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { BeatLoader } from "react-spinners";
 import CardWrapper from "../shared/CardWrapper";
 import FormError from "../shared/FormError";
 import FormSuccess from "../shared/FormSuccess";
@@ -103,6 +105,9 @@ const LoginForm = () => {
                       {...field}
                     />
                   </FormControl>
+                  <Button size="sm" variant="link" className="px-0 font-normal">
+                    <Link href="/auth/reset">Forgot Password?</Link>
+                  </Button>
                   <FormMessage />
                 </FormItem>
               )}
@@ -113,7 +118,7 @@ const LoginForm = () => {
           )}
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
-            {isPending ? "..." : "Login"}
+            {isPending ? <BeatLoader color="white" size="15" /> : "Login"}
           </Button>
         </form>
       </Form>

@@ -6,6 +6,7 @@ import { typeRegisterSchema } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { BeatLoader } from "react-spinners";
 import CardWrapper from "../shared/CardWrapper";
 import FormError from "../shared/FormError";
 import FormSuccess from "../shared/FormSuccess";
@@ -144,7 +145,7 @@ const RegisterForm = () => {
           {error.error && <FormError message={error.message} />}
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
-            {isPending ? "..." : "Register"}
+            {isPending ? <BeatLoader color="white" size="15" /> : "Register"}
           </Button>
         </form>
       </Form>
