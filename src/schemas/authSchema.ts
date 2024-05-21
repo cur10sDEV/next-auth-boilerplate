@@ -71,3 +71,29 @@ export const resetSchema = z.object({
     })
     .max(128, { message: "Maximum 128 characters allowed" }),
 });
+
+export const newPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .trim()
+      .min(8, { message: "Password must be at least 8 characters long" })
+      .max(128, { message: "Maximum 128 characters allowed" })
+      .regex(/[a-z]/, {
+        message: "Password must contain at least one lowercase letter",
+      })
+      .regex(/[A-Z]/, {
+        message: "Password must contain at least one uppercase letter",
+      })
+      .regex(/[0-9]/, {
+        message: "Password must contain at least one number",
+      })
+      .regex(/[#?!@$%^&*-]/, {
+        message: "Password must contain at least on special character",
+      }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match!",
+    path: ["confirmPassword"],
+  });

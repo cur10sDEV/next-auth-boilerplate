@@ -118,7 +118,7 @@ const LoginForm = () => {
           )}
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
-            {isPending ? <BeatLoader color="white" size="15" /> : "Login"}
+            {isPending ? <BeatLoader color="white" size="15px" /> : "Login"}
           </Button>
         </form>
       </Form>

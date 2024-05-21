@@ -22,7 +22,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
   try {
-    const passwordResetLink = `${process.env.basePath}/auth/reset/password?token=${token}`;
+    const passwordResetLink = `${process.env.basePath}/auth/new-password?token=${token}`;
 
     await resend.emails.send({
       from: "onboarding@resend.dev",

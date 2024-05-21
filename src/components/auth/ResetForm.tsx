@@ -36,7 +36,6 @@ const ResetForm = () => {
   });
 
   const onSubmit = async (values: typeResetSchema) => {
-    console.log(values);
     startTransition(() => {
       sendResetEmail(values).then((data) => {
         if (!data?.success) {
@@ -88,7 +87,7 @@ const ResetForm = () => {
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
             {isPending ? (
-              <BeatLoader color="white" size="15" />
+              <BeatLoader color="white" size="15px" />
             ) : (
               "Send reset email"
             )}

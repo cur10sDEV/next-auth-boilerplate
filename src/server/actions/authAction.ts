@@ -1,5 +1,6 @@
 "use server";
 
+import PasswordResetTokenService from "@/data/passwordResetToken";
 import UserService from "@/data/user";
 import VerificationTokenService from "@/data/verificationToken";
 import { hashPassword } from "@/lib/password";
@@ -14,9 +15,15 @@ import {
 import { validator } from "@/lib/zod/validation";
 import { signIn } from "@/nextAuth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { loginSchema, registerSchema, resetSchema } from "@/schemas/authSchema";
+import {
+  loginSchema,
+  newPasswordSchema,
+  registerSchema,
+  resetSchema,
+} from "@/schemas/authSchema";
 import {
   typeLoginSchema,
+  typeNewPassword,
   typeRegisterSchema,
   typeResetSchema,
 } from "@/types/authTypes";
@@ -120,7 +127,7 @@ export const registerUser = async (
     console.error(error);
     return {
       success: false,
-      message: error.message || "User registration failed!",
+      message: error.message || "Something went wrong!",
     };
   }
 };
@@ -159,7 +166,7 @@ export const verifyUserEmail = async (
     console.error(error);
     return {
       success: false,
-      message: error.message || "Email Verification Failed!",
+      message: error.message || "Something went wrong!",
     };
   }
 };
@@ -192,6 +199,56 @@ export const sendResetEmail = async (
     }
 
     return { success: false, message: "Email cannot be sent!" };
+  } catch (error: any) {
+    console.error(error);
+    return {
+      success: false,
+      message: error.message || "Something went wrong!",
+    };
+  }
+};
+
+export const newPassword = async (
+  values: typeNewPassword,
+  token?: string
+): Promise<actionResponse> => {
+  try {
+    const validatedFields = validator(newPasswordSchema, values);
+
+    const { password } = validatedFields.data as typeNewPassword;
+
+    if (!token) {
+      throw new Error("Invalid reset link!");
+    }
+
+    const existingToken =
+      await PasswordResetTokenService.getPasswordResetTokenByToken(token);
+
+    if (!existingToken) {
+      throw new Error("Invalid reset link!");
+    }
+
+    const hasExpired = new Date(existingToken.expires) < new Date();
+
+    if (hasExpired) {
+      throw new Error("Reset link has expired!");
+    }
+
+    const existingUser = await UserService.getUserByEmail(existingToken.email);
+
+    if (!existingUser) {
+      throw new Error("Email does not exist!");
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    await UserService.changeUserPasswordById(existingUser.id, hashedPassword);
+
+    await PasswordResetTokenService.deletePasswordResetTokenById(
+      existingToken.id
+    );
+
+    return { success: true, message: "Password updated!" };
   } catch (error: any) {
     console.error(error);
     return {
