@@ -1,9 +1,10 @@
 "use client";
 
-import { registerSchema } from "@/schemas/authSchema";
-import { registerUser } from "@/server/actions/authAction";
-import { typeRegisterSchema } from "@/types/authTypes";
+import { newPasswordSchema } from "@/schemas/authSchema";
+import { newPassword } from "@/server/actions/authAction";
+import { typeNewPassword } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { BeatLoader } from "react-spinners";
@@ -21,37 +22,44 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 
-const initialState: typeRegisterSchema = {
-  name: "",
-  email: "",
+const initialState: typeNewPassword = {
   password: "",
   confirmPassword: "",
 };
 
-const RegisterForm = () => {
+const NewPasswordForm = () => {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
   const [isPending, startTransition] = useTransition();
 
   const [error, setError] = useState({ error: false, message: "" });
   const [success, setSuccess] = useState({ success: false, message: "" });
 
-  const loginForm = useForm<typeRegisterSchema>({
-    resolver: zodResolver(registerSchema),
+  const newPasswordForm = useForm<typeNewPassword>({
+    resolver: zodResolver(newPasswordSchema),
     defaultValues: initialState,
   });
 
-  const onSubmit = async (values: typeRegisterSchema) => {
+  const onSubmit = async (values: typeNewPassword) => {
     startTransition(() => {
-      registerUser(values).then((data) => {
+      if (!token) {
+        setError({ error: true, message: "Invalid reset link!" });
+        setSuccess({ success: false, message: "" });
+        return;
+      }
+
+      newPassword(values, token).then((data) => {
         if (!data?.success) {
           setSuccess({ success: false, message: "" });
           setError({
             error: true,
-            message: data?.message || "Login failed!",
+            message: data?.message || "Password updation failed!",
           });
         } else {
           setSuccess({
             success: true,
-            message: data?.message || "Login Successfull!",
+            message: data?.message || "Password updated!",
           });
           setError({ error: false, message: "" });
         }
@@ -61,52 +69,18 @@ const RegisterForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Create an Account"
-      buttonLabel="Already have an account?"
+      headerLabel="Enter new Password"
+      buttonLabel="Back to login"
       buttonHref="/auth/login"
-      showSocial
     >
-      <Form {...loginForm}>
-        <form onSubmit={loginForm.handleSubmit(onSubmit)} className="space-y-6">
+      <Form {...newPasswordForm}>
+        <form
+          onSubmit={newPasswordForm.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
           <div className="space-y-4">
             <FormField
-              control={loginForm.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="John Doe"
-                      type="text"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={loginForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="johndoe@example.com"
-                      type="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={loginForm.control}
+              control={newPasswordForm.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
@@ -124,7 +98,7 @@ const RegisterForm = () => {
               )}
             />
             <FormField
-              control={loginForm.control}
+              control={newPasswordForm.control}
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
@@ -145,11 +119,15 @@ const RegisterForm = () => {
           {error.error && <FormError message={error.message} />}
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
-            {isPending ? <BeatLoader color="white" size="15px" /> : "Register"}
+            {isPending ? (
+              <BeatLoader color="white" size="15px" />
+            ) : (
+              "Reset Password"
+            )}
           </Button>
         </form>
       </Form>
     </CardWrapper>
   );
 };
-export default RegisterForm;
+export default NewPasswordForm;

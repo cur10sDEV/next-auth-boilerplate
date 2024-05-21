@@ -1,12 +1,9 @@
 "use client";
 
-import { authErrors } from "@/constants/errors";
-import { loginSchema } from "@/schemas/authSchema";
-import { loginUser } from "@/server/actions/authAction";
-import { typeLoginSchema } from "@/types/authTypes";
+import { resetSchema } from "@/schemas/authSchema";
+import { sendResetEmail } from "@/server/actions/authAction";
+import { typeResetSchema } from "@/types/authTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { BeatLoader } from "react-spinners";
@@ -24,28 +21,23 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 
-const initialState: typeLoginSchema = {
+const initialState: typeResetSchema = {
   email: "",
-  password: "",
 };
 
-const LoginForm = () => {
+const ResetForm = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState({ error: false, message: "" });
   const [success, setSuccess] = useState({ success: false, message: "" });
 
-  const searchParams = useSearchParams();
-  const urlErrorCode = searchParams.get("error");
-  const urlError = (urlErrorCode && authErrors[urlErrorCode]) || "";
-
-  const loginForm = useForm<typeLoginSchema>({
-    resolver: zodResolver(loginSchema),
+  const resetForm = useForm<typeResetSchema>({
+    resolver: zodResolver(resetSchema),
     defaultValues: initialState,
   });
 
-  const onSubmit = async (values: typeLoginSchema) => {
+  const onSubmit = async (values: typeResetSchema) => {
     startTransition(() => {
-      loginUser(values).then((data) => {
+      sendResetEmail(values).then((data) => {
         if (!data?.success) {
           setSuccess({ success: false, message: "" });
           setError({
@@ -65,16 +57,15 @@ const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Welcome Back!"
-      buttonLabel="Don't have an account?"
-      buttonHref="/auth/register"
-      showSocial
+      headerLabel="Forgot your password?"
+      buttonLabel="Back to login"
+      buttonHref="/auth/login"
     >
-      <Form {...loginForm}>
-        <form onSubmit={loginForm.handleSubmit(onSubmit)} className="space-y-6">
+      <Form {...resetForm}>
+        <form onSubmit={resetForm.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
-              control={loginForm.control}
+              control={resetForm.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
@@ -91,38 +82,19 @@ const LoginForm = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={loginForm.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="********"
-                      type="password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <Button size="sm" variant="link" className="px-0 font-normal">
-                    <Link href="/auth/reset">Forgot Password?</Link>
-                  </Button>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
-          {(error.error || urlError) && (
-            <FormError message={error.message || urlError} />
-          )}
+          {error.error && <FormError message={error.message} />}
           {success.success && <FormSuccess message={success.message} />}
           <Button disabled={isPending} className="w-full">
-            {isPending ? <BeatLoader color="white" size="15px" /> : "Login"}
+            {isPending ? (
+              <BeatLoader color="white" size="15px" />
+            ) : (
+              "Send reset email"
+            )}
           </Button>
         </form>
       </Form>
     </CardWrapper>
   );
 };
-export default LoginForm;
+export default ResetForm;

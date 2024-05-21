@@ -82,6 +82,22 @@ class UserService {
       return null;
     }
   }
+
+  static async changeUserPasswordById(id: string, password: string) {
+    try {
+      await db.user.update({
+        where: {
+          id,
+        },
+        data: {
+          password,
+        },
+      });
+    } catch (error) {
+      console.error("Database error - User Service");
+      return null;
+    }
+  }
 }
 
 export default UserService;
