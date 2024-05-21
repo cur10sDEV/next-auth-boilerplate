@@ -4,10 +4,13 @@ export const loginSchema = z.object({
   email: z
     .string()
     .trim()
+    .min(1, {
+      message: "Email is required",
+    })
     .email({
       message: "Please enter a valid email address",
     })
-    .max(128),
+    .max(128, { message: "Maximum 128 characters allowed" }),
   password: z
     .string()
     .trim()
@@ -55,3 +58,16 @@ export const registerSchema = z
     message: "Passwords don't match!",
     path: ["confirmPassword"],
   });
+
+export const resetSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, {
+      message: "Email is required",
+    })
+    .email({
+      message: "Please enter a valid email address",
+    })
+    .max(128, { message: "Maximum 128 characters allowed" }),
+});

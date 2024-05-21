@@ -3,13 +3,23 @@
 import UserService from "@/data/user";
 import VerificationTokenService from "@/data/verificationToken";
 import { hashPassword } from "@/lib/password";
-import { sendVerificationEmail } from "@/lib/resend/mail";
-import { generateVerificationToken } from "@/lib/token";
+import {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "@/lib/resend/mail";
+import {
+  generatePasswordResetToken,
+  generateVerificationToken,
+} from "@/lib/token";
 import { validator } from "@/lib/zod/validation";
 import { signIn } from "@/nextAuth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { loginSchema, registerSchema } from "@/schemas/authSchema";
-import { typeLoginSchema, typeRegisterSchema } from "@/types/authTypes";
+import { loginSchema, registerSchema, resetSchema } from "@/schemas/authSchema";
+import {
+  typeLoginSchema,
+  typeRegisterSchema,
+  typeResetSchema,
+} from "@/types/authTypes";
 import { actionResponse } from "@/types/generalTypes";
 import { AuthError } from "next-auth";
 
@@ -34,7 +44,10 @@ export const loginUser = async (
         );
 
         if (verificationToken) {
-          await sendVerificationEmail(email, verificationToken.token);
+          await sendVerificationEmail(
+            verificationToken.email,
+            verificationToken.token
+          );
 
           return { success: true, message: "Confirmation email sent!" };
         }
@@ -94,14 +107,17 @@ export const registerUser = async (
     const verificationToken = await generateVerificationToken(email);
 
     if (verificationToken) {
-      await sendVerificationEmail(email, verificationToken.token);
+      await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token
+      );
 
       return { success: true, message: "Confirmation email sent!" };
     }
 
     return { success: false, message: "User registration failed!" };
   } catch (error: any) {
-    console.error(error.message);
+    console.error(error);
     return {
       success: false,
       message: error.message || "User registration failed!",
@@ -144,6 +160,43 @@ export const verifyUserEmail = async (
     return {
       success: false,
       message: error.message || "Email Verification Failed!",
+    };
+  }
+};
+
+export const sendResetEmail = async (
+  values: typeResetSchema
+): Promise<actionResponse> => {
+  try {
+    const validatedFields = validator(resetSchema, values);
+
+    const { email } = validatedFields.data as typeResetSchema;
+
+    const existingUser = await UserService.getUserByEmail(email);
+
+    if (!existingUser || !existingUser.email) {
+      throw new Error("Email not found!");
+    }
+
+    const passwordResetToken = await generatePasswordResetToken(
+      existingUser.email
+    );
+
+    if (passwordResetToken) {
+      await sendPasswordResetEmail(
+        passwordResetToken.email,
+        passwordResetToken.token
+      );
+
+      return { success: true, message: "Reset email sent!" };
+    }
+
+    return { success: false, message: "Email cannot be sent!" };
+  } catch (error: any) {
+    console.error(error);
+    return {
+      success: false,
+      message: error.message || "Something went wrong!",
     };
   }
 };
