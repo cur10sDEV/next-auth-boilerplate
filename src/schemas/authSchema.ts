@@ -16,6 +16,12 @@ export const loginSchema = z.object({
     .trim()
     .min(1, { message: "Password is required" })
     .max(128),
+  code: z.optional(
+    z
+      .string()
+      .min(6, "The code should be 6 digits long")
+      .max(6, "The code should be 6 digits long")
+  ),
 });
 
 export const registerSchema = z

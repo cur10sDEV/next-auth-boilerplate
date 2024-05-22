@@ -2,6 +2,7 @@ export type successResponse = {
   success: true;
   message?: string;
   data?: any;
+  twoFactor?: boolean;
 };
 
 export type errorResponse = {
