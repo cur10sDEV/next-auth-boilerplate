@@ -12,3 +12,7 @@ export type errorResponse = {
 };
 
 export type actionResponse = successResponse | errorResponse;
+
+export interface IChildrenProps {
+  children: React.ReactNode;
+}
