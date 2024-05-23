@@ -11,7 +11,7 @@ const poppins = Poppins({
 
 export default function HomePage() {
   return (
-    <main className="h-screen flex items-center justify-center bg-gradient">
+    <main>
       <div className="flex flex-col gap-8 text-center text-white">
         <h1 className={cn("text-7xl drop-shadow-md", poppins.className)}>
           🔐 Auth

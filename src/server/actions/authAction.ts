@@ -17,7 +17,7 @@ import {
   generateVerificationToken,
 } from "@/lib/token";
 import { validator } from "@/lib/zod/validation";
-import { signIn } from "@/nextAuth/auth";
+import { signIn, signOut } from "@/nextAuth/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import {
   loginSchema,
@@ -314,4 +314,8 @@ export const newPassword = async (
       message: error.message || "Something went wrong!",
     };
   }
+};
+
+export const logoutUser = async () => {
+  await signOut({ redirectTo: "/auth/login" });
 };
