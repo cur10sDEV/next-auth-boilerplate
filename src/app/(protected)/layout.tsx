@@ -7,7 +7,7 @@ const ProtectedLayout = ({ children }: IChildrenProps) => {
     <SessionProvider>
       <div className="flex flex-col justify-center items-center gap-y-10 h-full w-full">
         <Navbar />
-        {children}
+        <div>{children}</div>
       </div>
     </SessionProvider>
   );
