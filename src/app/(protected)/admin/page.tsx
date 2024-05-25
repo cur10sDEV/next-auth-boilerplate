@@ -4,7 +4,7 @@ import RoleGate from "@/components/protected/RoleGate";
 import FormSuccess from "@/components/shared/FormSuccess";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { admin } from "@/server/actions/user";
+import { admin } from "@/server/actions/userAction";
 import { UserRole } from "@prisma/client";
 import { toast } from "sonner";
 

@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 
+import AccountService from "@/data/account";
 import TwoFactorConfirmationService from "@/data/twoFactorConfirmation";
 import UserService from "@/data/user";
 import { db } from "../../prisma/db";
@@ -42,17 +43,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
     async session({ token, session }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
-      }
+      if (session.user) {
+        if (token.sub) {
+          session.user.id = token.sub;
+        }
+        if (token.role) {
+          session.user.role = token.role;
+        }
 
-      if (session.user && token.role) {
-        session.user.role = token.role;
-      }
+        if (token.name) {
+          session.user.name = token.name;
+        }
 
-      if (session.user && token.isTwoFactorEnabled) {
+        if (token.email) {
+          session.user.email = token.email;
+        }
+
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
+        session.user.isOAuth = token.isOAuth as boolean;
       }
+
       return session;
     },
     async jwt({ token }) {
@@ -66,8 +76,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
+      const existingAccount = await AccountService.getAccountByUserId(
+        existingUser.id
+      );
+
+      token.isOAuth = !!existingAccount;
+      token.name = existingUser.name;
+      token.email = existingUser.email;
       token.role = existingUser.role;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
+
       return token;
     },
   },
