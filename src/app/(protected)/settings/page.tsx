@@ -204,7 +204,6 @@ const SettingsPage = () => {
                           checked={field.value}
                           disabled={isPending}
                           onCheckedChange={field.onChange}
-                          {...field}
                         />
                       </FormControl>
                       <FormMessage />

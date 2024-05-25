@@ -36,8 +36,9 @@ const LoginForm = () => {
   const [showTwoFactor, setShowTwoFactor] = useState(false);
 
   const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || undefined;
   const urlErrorCode = searchParams.get("error");
-  const urlError = (urlErrorCode && authErrors[urlErrorCode]) || "";
+  const urlError = (urlErrorCode && authErrors[urlErrorCode]) || undefined;
 
   const loginForm = useForm<typeLoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -46,7 +47,7 @@ const LoginForm = () => {
 
   const onSubmit = async (values: typeLoginSchema) => {
     startTransition(() => {
-      loginUser(values).then((data) => {
+      loginUser(values, callbackUrl).then((data) => {
         if (!data?.success) {
           setSuccess({ success: false, message: "" });
           setError({
