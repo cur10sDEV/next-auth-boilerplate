@@ -1,4 +1,5 @@
 import { typeRegisterSchema } from "@/types/authTypes";
+import { typeSettingsSchema } from "@/types/settingsTypes";
 import { db } from "../../prisma/db";
 
 class UserService {
@@ -92,6 +93,20 @@ class UserService {
         data: {
           password,
         },
+      });
+    } catch (error) {
+      console.error("Database error - User Service");
+      return null;
+    }
+  }
+
+  static async updateUser(id: string, values: typeSettingsSchema) {
+    try {
+      await db.user.update({
+        where: {
+          id,
+        },
+        data: { ...values },
       });
     } catch (error) {
       console.error("Database error - User Service");

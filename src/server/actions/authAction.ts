@@ -5,7 +5,7 @@ import TwoFactorConfirmationService from "@/data/twoFactorConfirmation";
 import TwoFactorTokenService from "@/data/twoFactorToken";
 import UserService from "@/data/user";
 import VerificationTokenService from "@/data/verificationToken";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, verifyPassword } from "@/lib/password";
 import {
   sendPasswordResetEmail,
   sendTwoFactorEmail,
@@ -46,6 +46,15 @@ export const loginUser = async (
       const existingUser = await UserService.getUserByEmail(email);
 
       if (!existingUser || !existingUser.email || !existingUser.password) {
+        return { success: false, message: "Invalid Credentials!" };
+      }
+
+      const matchPassword = await verifyPassword(
+        password,
+        existingUser.password
+      );
+
+      if (!matchPassword) {
         return { success: false, message: "Invalid Credentials!" };
       }
 
