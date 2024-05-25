@@ -35,7 +35,8 @@ import { actionResponse } from "@/types/generalTypes";
 import { AuthError } from "next-auth";
 
 export const loginUser = async (
-  values: typeLoginSchema
+  values: typeLoginSchema,
+  callbackUrl?: string
 ): Promise<actionResponse> => {
   try {
     const validatedData = validator(loginSchema, values);
@@ -130,7 +131,7 @@ export const loginUser = async (
       await signIn("credentials", {
         email,
         password,
-        redirectTo: DEFAULT_LOGIN_REDIRECT,
+        redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
       });
 
       return { success: true, message: "Success!" };
